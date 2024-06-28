@@ -154,6 +154,7 @@ function RTV.Cancel()
     if not RTV.Runned then return end
     RTV.Runned = false
     RTV.ClearVotes()
+    hook.Remove("PlayerFullLoad", "RTV.StartPanelOnConnect")
     --[[ Net Send to Clinets]]
     net.Start("RTV_ClosePanel")
     net.Broadcast()

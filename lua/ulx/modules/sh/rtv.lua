@@ -61,6 +61,18 @@ nominatecmd:addParam{ type = ULib.cmds.StringArg, completes = ulx.votemaps, hint
 nominatecmd:defaultAccess( ULib.ACCESS_ALL )
 nominatecmd:help("Nominate map")
 
+function ulx.rtvavgplayers(calling_ply, count)
+	local state, err = RTV.ChangeMapInfo(game.GetMap(), count, nil, nil)
+	if state then
+		ulx.fancyLogAdmin( calling_ply, "#A setted players " .. count .. " for current map")
+	else
+		ULib.tsayError( calling_ply, "Error: " .. err, true )
+	end
+end
+local rtvavgplayers = ulx.command(CATEGORY_NAME, "rtvavgplayers", ulx.rtvavgplayers, "!rtvavgplayers")
+rtvavgplayers:addParam{ type = ULib.cmds.NumArg, min = 0, max = game.MaxPlayers(), default = 0, hint = "players", ULib.cmds.round }
+rtvavgplayers:defaultAccess(ULib.ACCESS_SUPERADMIN)
+rtvavgplayers:help("Set players count for map")
 
 if SERVER then
 	hook.Add("ULX.Votemap.Success", "RTV.UpdateMapInfo", function(map)
