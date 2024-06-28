@@ -179,8 +179,8 @@ do
     end
 
     hook.Add("RTV.CanNominate", "RTV.CanNominate.BaseLogic", function(ply, map)
-        if ply.Nominate_Next >= CurTime() then return false, "Подожди еще " .. math.Round(ply.Nominate_Next - CurTime()) .. " секунд." end
-        if ply.Nominate_Map == map then return false, "Вы уже номинировали эту карту" end
+        if ply.Nominate_Next and ply.Nominate_Next >= CurTime() then return false, "Подожди еще " .. math.Round(ply.Nominate_Next - CurTime()) .. " секунд." end
+        if ply.Nominate_Map and ply.Nominate_Map == map then return false, "Вы уже номинировали эту карту" end
         --if not isAllowedPrefixMap(map) then return false, "Некорректный префикс карты" end
         if not table.HasValue(findMaps, map .. ".bsp") then return false, "Карты не существует" end
         if RTV.Runned then return false, "Во время голосования номинирование не возможно!" end
