@@ -24,7 +24,7 @@ do
 
     function RTV.StartVoting()
         PrintMessage(HUD_PRINTTALK, "Голосование на смену карты запущено...")
-        timer.Simple(3, function() RTV.RunVote(nil, nil, nil, nil, nil, nil, callbackAction) end)
+        timer.Simple(3, function() RTV.RunVote(nil, nil, true, false, nil, nil, callbackAction) end)
     end
 
     local function AddVote(ply)
@@ -125,7 +125,7 @@ do
     function RTV.GetSortedMapsNames(latestprior, lowprior)
         local maps = table.GetKeys(RTV.MapInfo)
         local impact = RTV.Config.ImpactNomination
-        local playercount = #player.GetAll()
+        local playercount = #player.GetHumans()
         local time = os.time()
         if #maps == 0 then return {} end
         local state, error = pcall(function()

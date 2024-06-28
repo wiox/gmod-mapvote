@@ -9,6 +9,7 @@ if SERVER then
     include("server/sv_config.lua")
     include("server/sv_rtv.lua")
     include("server/sv_rtv_vote.lua")
+    include("server/sv_autortv.lua")
 else
     include("client/cl_rtv_vote.lua")
 end

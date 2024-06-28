@@ -45,14 +45,15 @@ function RTV.RunVote(timelength, allowcurrentmap, latestwas, lowrating, limitmap
     local maps = RTV.GetSortedMapsNames(latestwas, lowrating)
     mapsQueue = {}
     for _, map in pairs(maps) do
-        if isCurrentMap(map) then
-            if not allowcurrentmap or Repeats >= maprepeats then continue end
-            Repeats = Repeats + 1
-        end
-
-        if cooldown and RTV.isRecentMap(map) and not isCurrentMap(map) then continue end
+        if isCurrentMap(map) then continue end
+        if cooldown and RTV.isRecentMap(map) then continue end
         table.insert(mapsQueue, map)
         if limitmaps and #mapsQueue >= limitmaps then break end
+    end
+
+    if allowcurrentmap and Repeats < maprepeats then
+        table.insert(mapsQueue, getCurrentMap())
+        Repeats = Repeats + 1
     end
 
     if #mapsQueue < 1 then
