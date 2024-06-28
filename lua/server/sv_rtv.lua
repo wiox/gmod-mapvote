@@ -5,7 +5,7 @@ do
     local WaitTime = CurTime() + TimeoutAfterMapChange
     local PlayerMinCount = RTV.Config.MinVotesCount or 3
     local function MustVoted()
-        return math.Round(#player.GetHumans() * RTV.Config.PercentVoters)
+        return math.max(math.Round(#player.GetHumans() * RTV.Config.PercentVoters), PlayerMinCount)
     end
 
     local function ShouldStartChange()
@@ -87,6 +87,7 @@ do
 
     hook.Add("PlayerDisconnected", "RTV.RemoveVote", function(ply)
         if ply.RTV_Voted then RTV.DecreaseVote() end
+        if ply.Nominate_Map then RTV.DecreaseNominate(ply) end
         timer.Simple(0.1, function() if ShouldStartChange() then RTV.StartVoting() end end)
     end)
 end
@@ -110,6 +111,13 @@ do
         NominateMaps[map] = (NominateMaps[map] or 0) + 1
         MsgN(ply:Nick() .. " номинирует карту " .. map .. ".")
         PrintMessage(HUD_PRINTTALK, ply:Nick() .. " номинирует карту " .. map .. ". (" .. NominateMaps[map] .. ")")
+    end
+
+    function RTV.DecreaseNominate(ply)
+        if not ply:IsValid() then return end
+        local map = ply.Nominate_Map
+        NominateMaps[map] = math.Clamp(NominateMaps[map] - 1, 0, math.huge)
+        ply.Nominate_Next = nil
     end
 
     function RTV.NominateMap(ply, map)
@@ -164,7 +172,7 @@ do
     end
 
     hook.Add("RTV.CanNominate", "RTV.CanNominate.BaseLogic", function(ply, map)
-        if ply.Nominate_Next >= CurTime() then return false, "Подожди еще " .. CurTime() - ply.Nominate_Next .. " секунд." end
+        if ply.Nominate_Next >= CurTime() then return false, "Подожди еще " .. math.Round(ply.Nominate_Next - CurTime()) .. " секунд." end
         if ply.Nominate_Map == map then return false, "Вы уже номинировали эту карту" end
         --if not isAllowedPrefixMap(map) then return false, "Некорректный префикс карты" end
         if not table.HasValue(findMaps, map .. ".bsp") then return false, "Карты не существует" end
