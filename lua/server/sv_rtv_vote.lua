@@ -62,14 +62,24 @@ function RTV.RunVote(timelength, allowcurrentmap, latestwas, lowrating, limitmap
     end
 
     --[[ Net Send to Clinets]]
-    net.Start("RTV_StartVote")
-    net.WriteUInt(#mapsQueue, 32)
-    for i = 1, #mapsQueue do
-        net.WriteString(mapsQueue[i])
+    local started = timelength + CurTime()
+    local function openRTVForm(ply)
+        net.Start("RTV_StartVote")
+        net.WriteUInt(#mapsQueue, 32)
+        for i = 1, #mapsQueue do
+            net.WriteString(mapsQueue[i])
+        end
+
+        net.WriteUInt(started - CurTime(), 32)
+        if ply ~= nil then
+            net.Send(ply)
+        else
+            net.Broadcast()
+        end
     end
 
-    net.WriteUInt(timelength, 32)
-    net.Broadcast()
+    openRTVForm()
+    hook.Add("PlayerFullLoad", "RTV.StartPanelOnConnect", openRTVForm)
     RTV.Runned = true
     Votes = {}
     timer.Create("RTV.VoteHandler", timelength, 1, function()
@@ -112,6 +122,7 @@ function RTV.RunVote(timelength, allowcurrentmap, latestwas, lowrating, limitmap
             print("AutoGamemode not enabled")
         end
 
+        hook.Remove("PlayerFullLoad", "RTV.StartPanelOnConnect")
         if isCurrentMap(map) then
             RTV.ClearVotes()
             PrintMessage(HUD_PRINTTALK, "Карта продлена.")
