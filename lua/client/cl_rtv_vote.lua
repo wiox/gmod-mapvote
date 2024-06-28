@@ -27,7 +27,7 @@ local mapsQueue = {}
 local Votes = {}
 net.Receive("RTV_StartVote", function()
     mapsQueue = {}
-    -- RTV.Runned = true
+    RTV.Runned = true
     Votes = {}
     local amt = net.ReadUInt(32)
     for i = 1, amt do
@@ -55,7 +55,13 @@ net.Receive("RTV_UpdateVote", function()
     end
 end)
 
-net.Receive("RTV_ClosePanel", function() if IsValid(RTV.Panel) then RTV.Panel:Remove() end end)
+net.Receive("RTV_ClosePanel", function()
+    if IsValid(RTV.Panel) then
+        RTV.Runned = false
+        RTV.Panel:Remove()
+    end
+end)
+
 -- net.Receive("RTV_Delay", function() chat.AddText(Color(102, 255, 51), "[RTV]", Color(255, 255, 255), " The vote has been paused, map vote will begin on round end") end)
 local PANEL = {}
 function PANEL:Init()
@@ -77,10 +83,7 @@ function PANEL:Init()
     self.closeButton = vgui.Create("DButton", self.Canvas)
     self.closeButton:SetText("")
     self.closeButton.Paint = function(panel, w, h) derma.SkinHook("Paint", "WindowCloseButton", panel, w, h) end
-    self.closeButton.DoClick = function()
-        self:SetVisible(false)
-    end
-
+    self.closeButton.DoClick = function() self:SetVisible(false) end
     self.maximButton = vgui.Create("DButton", self.Canvas)
     self.maximButton:SetText("")
     self.maximButton:SetDisabled(true)
@@ -265,8 +268,18 @@ function PANEL:Flash(id)
         end)
 
         timer.Simple(1.0, function() bar.bgColor = Color(100, 100, 100) end)
-        timer.Simple(1.5, function() RTV.Panel:Remove() end)
+        timer.Simple(1.5, function()
+            RTV.Runned = false
+            self:Remove()
+        end)
     end
 end
+
+hook.Add("OnPlayerChat", "RTV.ReopenForm", function(ply, txt)
+    if ply ~= LocalPlayer() then return end
+    if not RTV.Runned then return end
+    if txt == "!rtv" then RTV.Panel:SetVisible(true) end
+    return true
+end)
 
 derma.DefineControl("RTV_VoteScreen", "", PANEL, "DPanel")

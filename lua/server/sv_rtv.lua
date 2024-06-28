@@ -71,14 +71,21 @@ do
         hook.Add("SAM.Loaded", "RTV.RemoveBaseHandler", function()
             hook.Remove("PlayerSay", "RTV.ChatHandler")
             hook.Remove("SAM.Loaded", "RTV.RemoveBaseHandler")
+            hook.Remove("ULXLoaded", "RTV.RemoveBaseHandler")
+        end)
+
+        hook.Add("ULXLoaded", "RTV.RemoveBaseHandler", function()
+            hook.Remove("PlayerSay", "RTV.ChatHandler")
+            hook.Remove("SAM.Loaded", "RTV.RemoveBaseHandler")
+            hook.Remove("ULXLoaded", "RTV.RemoveBaseHandler")
         end)
     end
 
     --[[ Блоки условий ]]
     hook.Add("RTV.CanVote", "RTV.CanVote.BaseLogic", function(ply)
         local plyCount = table.Count(player.GetHumans())
+        if RTV.Runned then return false, "Голосование уже идет, возвращаемся к выбору..." end
         if WaitTime >= CurTime() then return false, "Подожди немного после смены карты!" end
-        if RTV.Runned then return false, "Голосование уже идет!" end
         if ply.RTV_Voted then return false, "Вы уже писали '!rtv'" end
         if RTV.MapMustChange then return false, "Голосование завершилось, будет изменена карта!" end
         if plyCount < PlayerMinCount then return false, "Недостаточно игроков для написания '!rtv'" end
