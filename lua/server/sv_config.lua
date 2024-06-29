@@ -28,7 +28,8 @@ do
         map = string.Replace(map, ".bsp", "")
         if RTV.MapInfo[map] then return false, "Map " .. map .. " exists" end
         RTV.MapInfo[map] = {
-            players = playercount
+            players = playercount,
+            last = os.time()
         }
 
         hook.Run("RTVMapInfoAdded", map, RTV.MapInfo[map])
