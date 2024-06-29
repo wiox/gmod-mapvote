@@ -26,6 +26,7 @@ RTV.Panel = false
 local mapsQueue = {}
 local Votes = {}
 net.Receive("RTV_StartVote", function()
+    if RTV.Runned then RTV.Panel:SetVisible(true) return end
     mapsQueue = {}
     RTV.Runned = true
     Votes = {}
@@ -62,7 +63,7 @@ net.Receive("RTV_ClosePanel", function()
     end
 end)
 
--- net.Receive("RTV_Delay", function() chat.AddText(Color(102, 255, 51), "[RTV]", Color(255, 255, 255), " The vote has been paused, map vote will begin on round end") end)
+--net.Receive("RTV_Delay", function() chat.AddText(Color(102, 255, 51), "[RTV]", Color(255, 255, 255), " The vote has been paused, map vote will begin on round end") end)
 local PANEL = {}
 function PANEL:Init()
     self:ParentToHUD()
@@ -96,7 +97,7 @@ function PANEL:Init()
 end
 
 function PANEL:PerformLayout()
-    local cx, cy = chat.GetChatBoxPos()
+    local _, cy = chat.GetChatBoxPos()
     self:SetPos(0, 0)
     self:SetSize(ScrW(), ScrH())
     local extra = math.Clamp(300, 0, ScrW() - 640)
@@ -119,9 +120,7 @@ function PANEL:PerformLayout()
     self.minimButton:SetVisible(true)
 end
 
-local heart_mat = Material("icon16/heart.png")
 local star_mat = Material("icon16/star.png")
-local shield_mat = Material("icon16/shield.png")
 function PANEL:AddVoter(voter)
     for k, v in pairs(self.Voters) do
         if v.Player and v.Player == voter then return false end
@@ -178,7 +177,6 @@ function PANEL:Think()
                 end
 
                 if IsValid(bar) then
-                    local CurrentPos = Vector(v.x, v.y, 0)
                     local NewPos = Vector((bar.x + bar:GetWide()) - 21 * bar.NumVotes - 2, bar.y + (bar:GetTall() * 0.5 - 10), 0)
                     if not v.CurPos or v.CurPos ~= NewPos then
                         v:MoveTo(NewPos.x, NewPos.y, 0.3)
@@ -239,9 +237,6 @@ function PANEL:GetMapButton(id)
 end
 
 function PANEL:Paint()
-    --Derma_DrawBackgroundBlur(self)
-    local CenterY = ScrH() / 2
-    local CenterX = ScrW() / 2
     surface.SetDrawColor(0, 0, 0, 200)
     surface.DrawRect(0, 0, ScrW(), ScrH())
 end
@@ -274,12 +269,5 @@ function PANEL:Flash(id)
         end)
     end
 end
-
-hook.Add("OnPlayerChat", "RTV.ReopenForm", function(ply, txt)
-    if ply ~= LocalPlayer() then return end
-    if not RTV.Runned then return end
-    if txt == "!rtv" then RTV.Panel:SetVisible(true) end
-    return true
-end)
 
 derma.DefineControl("RTV_VoteScreen", "", PANEL, "DPanel")

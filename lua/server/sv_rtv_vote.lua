@@ -6,7 +6,7 @@ RTV.Runned = false
 local mapsQueue = {}
 local Votes = {}
 local Repeats = 0
---[[ Net Send to Clinets]]
+
 net.Receive("RTV_UpdateVote", function(len, ply)
     if RTV.Runned and IsValid(ply) then
         local update_type = net.ReadUInt(3)
@@ -57,11 +57,10 @@ function RTV.RunVote(timelength, allowcurrentmap, latestwas, lowrating, limitmap
     end
 
     if #mapsQueue < 1 then
-        PrintMessage(HUD_PRINTTALK, "Ошибка, недостаточно карт для запуска голосования.")
+        PrintMessage(HUD_PRINTTALK, "Error, not enough maps to start voting.")
         return
     end
 
-    --[[ Net Send to Clinets]]
     local started = timelength + CurTime()
     local function openRTVForm(ply)
         net.Start("RTV_StartVote")
@@ -96,14 +95,14 @@ function RTV.RunVote(timelength, allowcurrentmap, latestwas, lowrating, limitmap
         end
 
         local winner = table.GetWinningKey(results) or 1
-        --[[ Net Send to Clinets]]
+
         net.Start("RTV_UpdateVote")
         net.WriteUInt(RTV.UPDATE_WIN, 3)
         net.WriteUInt(winner, 32)
         net.Broadcast()
         local map = mapsQueue[winner]
         local gamemode = nil
-        -- Zalupa
+
         if autoGM then
             -- check if map matches a gamemode's map pattern
             for k, gm in pairs(engine.GetGamemodes()) do
@@ -125,7 +124,7 @@ function RTV.RunVote(timelength, allowcurrentmap, latestwas, lowrating, limitmap
         hook.Remove("PlayerFullLoad", "RTV.StartPanelOnConnect")
         if isCurrentMap(map) then
             RTV.ClearVotes()
-            PrintMessage(HUD_PRINTTALK, "Карта продлена.")
+            PrintMessage(HUD_PRINTTALK, "Current map has been extended.")
             hook.Run("RTVResumeMap")
             return
         end
@@ -134,7 +133,7 @@ function RTV.RunVote(timelength, allowcurrentmap, latestwas, lowrating, limitmap
             RTV.RecentMapPush(map)
             RTV.MapMustChange = true
             local _, c_data = RTV.ViewMapInfo(map)
-            RTV.ChangeMapInfo(map, nil, os.time(), c_data.picks or 0 + 1)
+            RTV.ChangeMapInfo(map, nil, nil, c_data.picks or 0 + 1)
             timer.Simple(2, function()
                 if gamemode and gamemode ~= engine.ActiveGamemode() then RunConsoleCommand("gamemode", gamemode) end
                 RunConsoleCommand("changelevel", map)
@@ -142,6 +141,7 @@ function RTV.RunVote(timelength, allowcurrentmap, latestwas, lowrating, limitmap
         end
 
         if cb then
+            hook.Run("RTV.ChangeMap")
             cb(function(defaultaction) if defaultaction then changeMap() end end)
             return
         end
@@ -152,10 +152,10 @@ end
 
 function RTV.Cancel()
     if not RTV.Runned then return end
-    RTV.Runned = false
     RTV.ClearVotes()
+    RTV.Runned = false
     hook.Remove("PlayerFullLoad", "RTV.StartPanelOnConnect")
-    --[[ Net Send to Clinets]]
+    hook.Run("RTVResumeMap")
     net.Start("RTV_ClosePanel")
     net.Broadcast()
     timer.Stop("RTV.VoteHandler")

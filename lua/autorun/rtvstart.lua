@@ -1,5 +1,4 @@
 RTV = RTV or {}
---RTV.Runned = false
 RTV.UPDATE_VOTE = 1
 RTV.UPDATE_WIN = 3
 
@@ -23,16 +22,17 @@ if engine.ActiveGamemode() ~= "jailbreak" then
 end
 
 if SERVER then
-    AddCSLuaFile()
+    AddCSLuaFile("shared/sh_utils.lua")
+    AddCSLuaFile("shared/sh_rtv.lua")
     AddCSLuaFile("client/cl_rtv_vote.lua")
+    include("shared/sh_utils.lua")
     include("server/sv_config.lua")
     include("server/sv_rtv.lua")
     include("server/sv_rtv_vote.lua")
     include("server/sv_autortv.lua")
+    include("shared/sh_rtv.lua")
 else
+    include("shared/sh_utils.lua")
     include("client/cl_rtv_vote.lua")
+    include("shared/sh_rtv.lua")
 end
-
--- hook.Add("SAM.Loading", "SAM.RTV_Init", function(load)
---     load("sam/")
--- end)

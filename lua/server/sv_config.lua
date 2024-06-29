@@ -104,43 +104,20 @@ do
         return table.GetKeys(RTV.Config)
     end
 
-    do
-        function gmPrefixies()
-            local info = file.Read(GAMEMODE.Folder .. "/" .. GAMEMODE.FolderName .. ".txt", "GAME")
-            if info then
-                local info = util.KeyValuesToTable(info)
-                prefix = info.maps
-            else
-                error("MapVote Prefix can not be loaded from gamemode")
+    function RTV.isAllowedPrefix(map_or_prefix)
+        local allowed = false
+        local pref = RTV.Config.Prefixies
+        if pref and type(pref) ~= "table" then pref = {pref} end
+        if pref == nil then return false end -- заглушка
+        for _, v in pairs(pref) do
+            if string.find(map_or_prefix, "^" .. v) then
+                allowed = true
+                break
             end
-
-            prefix = string.Split(prefix, "|")
-            for k, v in pairs(prefix) do
-                prefix[k] = string.sub(v, 2)
-            end
-            return prefix
         end
-
-        function RTV.isAllowedPrefix(map_or_prefix)
-            local allowed = false
-            local pref = RTV.Config.Prefixies
-            if not RTV.Config.Prefixies then pref = gmPrefixies() end
-            if pref and type(pref) ~= "table" then pref = {pref} end
-            if pref == nil then -- заглушка
-                return false
-            end
-
-            for _, v in pairs(pref) do
-                if string.find(map_or_prefix, "^" .. v) then
-                    allowed = true
-                    break
-                end
-            end
-            return allowed
-        end
+        return allowed
     end
 
-    --
     do
         local rewrite = false
         local function write()
@@ -193,7 +170,6 @@ do
         hook.Add("RTVRecentCleared", "RTVCheckRecentClearedBeforeWriteFile", write)
     end
 
-    --
     do
         local maps = {}
         local function isExcludedMap(map)
@@ -227,10 +203,7 @@ do
         end)
 
         hook.Add("SAM.Loaded", "RTV.sam.LoadMaps", function()
-            for _, v in pairs(sam.get_global("Votemap.Excluded")) do
-                maps[v] = true
-            end
-
+            maps = sam.get_global("Votemap.Excluded")
             loadMaps()
             hook.Remove("SAM.Loaded", "RTV.sam.LoadMaps")
         end)
