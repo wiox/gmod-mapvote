@@ -119,8 +119,13 @@ do
         local state, error = pcall(function()
             table.sort(maps, function(a, b)
                 local score1, score2, mapinfo1, mapinfo2 = 0, 0, RTV.MapInfo[a], RTV.MapInfo[b]
-                if playercount >= mapinfo1.players and playercount <= mapinfo1.players + 5 then score1 = score1 + 1 end
-                if playercount >= mapinfo2.players and playercount <= mapinfo2.players + 5 then score2 = score2 + 1 end
+                local pls1, pls2 = playercount - mapinfo1.players, playercount - mapinfo2.players
+                if pls1 < pls2 then
+                    score1 = score1 + 1
+                elseif pls1 > pls2 then
+                    score2 = score2 + 1
+                end
+
                 if latestprior then
                     score1 = score1 + ((time - (mapinfo1.last or 0)) / 604800)
                     score2 = score2 + ((time - (mapinfo2.last or 0)) / 604800)
